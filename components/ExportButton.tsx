@@ -16,15 +16,23 @@ export default function ExportButton({ targetRef, filename }: Props) {
     setBusy(true);
     setErr(null);
     try {
+      // Wait for fonts to be ready so the serif renders sharply in the capture
+      const docFonts = (document as Document & { fonts?: FontFaceSet }).fonts;
+      if (docFonts?.ready) {
+        await docFonts.ready;
+      }
       const html2canvas = (await import("html2canvas")).default;
       const node = targetRef.current;
+      // Scale 4 for crisp output on high-DPI mobile screens
       const canvas = await html2canvas(node, {
         backgroundColor: "#faf8f5",
-        scale: 2,
+        scale: 4,
         useCORS: true,
         logging: false,
-        // Avoid clipping wide tables on small viewports
+        // Avoid clipping wide layouts on small viewports
         windowWidth: Math.max(node.scrollWidth, document.documentElement.clientWidth),
+        imageTimeout: 15000,
+        removeContainer: true,
       });
       const dataUrl = canvas.toDataURL("image/png");
       const a = document.createElement("a");
