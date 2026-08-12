@@ -15,6 +15,7 @@ interface Props {
 export default function ScreenshotModal({ open, items, onClose }: Props) {
   const holderRef = useRef<HTMLDivElement>(null);
   const captureRef = useRef<HTMLDivElement>(null);
+  const shotRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const [saving, setSaving] = useState(false);
 
@@ -41,13 +42,30 @@ export default function ScreenshotModal({ open, items, onClose }: Props) {
   if (!open) return null;
 
   const handleSave = async () => {
-    if (!captureRef.current) return;
+    const target = shotRef.current;
+    if (!target) return;
     setSaving(true);
     try {
       const docFonts = (document as Document & { fonts?: FontFaceSet }).fonts;
-      if (docFonts?.ready) await docFonts.ready;
+      if (docFonts) {
+        try {
+          await docFonts.ready;
+        } catch {
+          /* ignore */
+        }
+        try {
+          await Promise.all([
+            docFonts.load('400 12px "Source Serif 4"'),
+            docFonts.load('500 12px "Source Serif 4"'),
+            docFonts.load('600 12px "Source Serif 4"'),
+            docFonts.load('700 24px "Source Serif 4"'),
+          ]);
+        } catch {
+          /* ignore — 回退到系统衬线字体 */
+        }
+      }
       const html2canvas = (await import("html2canvas")).default;
-      const canvas = await html2canvas(captureRef.current, {
+      const canvas = await html2canvas(target, {
         backgroundColor: "#FAF8F5",
         scale: 4,
         useCORS: true,
@@ -76,6 +94,7 @@ export default function ScreenshotModal({ open, items, onClose }: Props) {
   };
 
   return (
+    <>
     <div
       className="fixed inset-0 z-50 flex items-center justify-center modal-overlay"
       onMouseDown={(e) => {
@@ -144,5 +163,22 @@ export default function ScreenshotModal({ open, items, onClose }: Props) {
         </div>
       </div>
     </div>
+
+    {/* 离屏、原尺寸、无 transform 的表格，专供 html2canvas 截图，避免预览缩放导致字号错乱 */}
+    <div
+      aria-hidden
+      style={{
+        position: "fixed",
+        left: -10000,
+        top: 0,
+        width: INNER_W,
+        pointerEvents: "none",
+      }}
+    >
+      <div ref={shotRef} style={{ width: INNER_W }}>
+        <ExportTable items={items} />
+      </div>
+    </div>
+    </>
   );
 }
