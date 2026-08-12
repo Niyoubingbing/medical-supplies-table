@@ -13,7 +13,7 @@ const C = {
   alt: "#FBF9F5",
 };
 
-// 列宽（px），总和 = 944，与容器内容宽度一致
+// 列宽（px），总和 = 944，与容器内容宽度一致（1000 - 左右 padding 28*2）
 const COLS: { key: string; label: string; w: number; align: "left" | "center" }[] = [
   { key: "spd", label: "SPD", w: 84, align: "left" },
   { key: "no", label: "序号", w: 52, align: "center" },
@@ -26,14 +26,10 @@ const COLS: { key: string; label: string; w: number; align: "left" | "center" }[
 
 interface Props {
   items: Item[];
-  title?: string;
 }
 
-export default function ExportTable({ items, title = "医用耗材请购单" }: Props) {
-  const now = new Date();
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const stamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
-
+// 导出只要表格本身：去掉标题块与底部生成时间，单元格垂直居中
+export default function ExportTable({ items }: Props) {
   return (
     <div
       style={{
@@ -45,15 +41,6 @@ export default function ExportTable({ items, title = "医用耗材请购单" }: 
         color: C.ink,
       }}
     >
-      <div style={{ textAlign: "center", marginBottom: 14 }}>
-        <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: "0.04em" }}>
-          {title}
-        </div>
-        <div style={{ fontSize: 12, color: C.inkSoft, marginTop: 4 }}>
-          请购数固定 {FIXED_QTY} {FIXED_UNIT}/条 · 共 {items.length} 条记录
-        </div>
-      </div>
-
       <table
         style={{
           width: "100%",
@@ -78,6 +65,7 @@ export default function ExportTable({ items, title = "医用耗材请购单" }: 
                   background: C.headBg,
                   padding: "8px 10px",
                   textAlign: c.align,
+                  verticalAlign: "middle",
                   fontWeight: 600,
                   color: C.ink,
                   whiteSpace: "nowrap",
@@ -97,6 +85,7 @@ export default function ExportTable({ items, title = "医用耗材请购单" }: 
                   border: `1px solid ${C.line}`,
                   padding: "16px 10px",
                   textAlign: "center",
+                  verticalAlign: "middle",
                   color: C.inkSoft,
                 }}
               >
@@ -121,17 +110,6 @@ export default function ExportTable({ items, title = "医用耗材请购单" }: 
           )}
         </tbody>
       </table>
-
-      <div
-        style={{
-          fontSize: 11,
-          color: C.inkSoft,
-          marginTop: 10,
-          textAlign: "right",
-        }}
-      >
-        生成时间：{stamp}
-      </div>
     </div>
   );
 }
@@ -142,9 +120,9 @@ function cellStyle(
 ): React.CSSProperties {
   return {
     border: `1px solid ${C.line}`,
-    padding: "7px 10px",
+    padding: "8px 10px",
     textAlign: align,
-    verticalAlign: "top",
+    verticalAlign: "middle",
     whiteSpace: "normal",
     wordBreak: "break-word",
     fontWeight: strong ? 600 : 400,
