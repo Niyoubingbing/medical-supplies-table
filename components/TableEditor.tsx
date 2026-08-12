@@ -29,11 +29,13 @@ export default function TableEditor({
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-line bg-paper-50 shadow-card">
-      <table
-        className="w-full border-collapse text-[14.5px]"
-        style={{ tableLayout: "fixed" }}
-      >
+    <>
+      {/* Desktop / tablet: keep the original table exactly as before */}
+      <div className="hidden sm:block overflow-x-auto rounded-xl border border-line bg-paper-50 shadow-card">
+        <table
+          className="w-full border-collapse text-[14.5px]"
+          style={{ tableLayout: "fixed" }}
+        >
         <colgroup>
           <col style={{ width: "9%" }} />   {/* SPD */}
           <col style={{ width: "5%" }} />    {/* 序号 */}
@@ -136,6 +138,256 @@ export default function TableEditor({
           ))}
         </tbody>
       </table>
+      </div>
+
+      {/* Mobile: card list (replaces the table below 640px) */}
+      <div className="sm:hidden flex flex-col gap-3">
+        {items.map((it) => (
+          <CardRow
+            key={it.id}
+            item={it}
+            onChange={onChange}
+            onRemove={onRemove}
+            onEdit={onEdit}
+          />
+        ))}
+      </div>
+    </>
+  );
+}
+
+/* ---------- Mobile card layout (below 640px) ---------- */
+
+function CardRow({
+  item,
+  onChange,
+  onRemove,
+  onEdit,
+}: {
+  item: Item;
+  onChange: (id: string, patch: Partial<Item>) => void;
+  onRemove: (id: string) => void;
+  onEdit: (item: Item) => void;
+}) {
+  return (
+    <div className="rounded-xl border border-line bg-paper-50 shadow-card p-3.5">
+      {/* Header: 序号 badge + actions */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center justify-center min-w-[1.75rem] h-7 px-2 rounded-full bg-accent text-paper-50 text-sm font-semibold tabular-nums">
+            {item.no}
+          </span>
+          <span className="text-[11px] text-ink-400">序号</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onEdit(item)}
+            className="rounded-md px-3 py-1.5 text-xs font-medium text-accent border border-accent/40 bg-accent-soft/30 hover:bg-accent-soft/60 transition-colors"
+          >
+            编辑
+          </button>
+          <button
+            onClick={() => {
+              if (confirm(`确定删除「${item.name || "此条目"}」？`)) {
+                onRemove(item.id);
+              }
+            }}
+            className="rounded-md px-3 py-1.5 text-xs text-ink-500 hover:text-accent hover:bg-paper-200 transition-colors inline-flex items-center justify-center gap-1"
+            title="删除该条"
+            aria-label="删除"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            </svg>
+            删除
+          </button>
+        </div>
+      </div>
+
+      {/* Fields */}
+      <div className="grid grid-cols-1 gap-2.5">
+        <CardField
+          label="品名"
+          value={item.name}
+          onCommit={(v) => onChange(item.id, { name: v })}
+          required
+          placeholder="未填写"
+          className="font-medium"
+        />
+        <CardField
+          label="SPD"
+          value={item.spd}
+          onCommit={(v) => onChange(item.id, { spd: v })}
+          placeholder="—"
+        />
+        <CardField
+          label="规格"
+          value={item.spec}
+          onCommit={(v) => onChange(item.id, { spec: v })}
+          multiline
+          required
+          placeholder="未填写"
+        />
+        <div className="grid grid-cols-2 gap-2.5">
+          <CardField
+            label="请购数"
+            value={String(FIXED_QTY)}
+            readOnly
+          />
+          <CardField label="单位" value={FIXED_UNIT} readOnly />
+        </div>
+        <CardField
+          label="备注"
+          value={item.remark}
+          onCommit={(v) => onChange(item.id, { remark: v })}
+          multiline
+          placeholder="—"
+        />
+      </div>
+    </div>
+  );
+}
+
+interface CardFieldProps {
+  label: string;
+  value: string;
+  onCommit?: (v: string) => void;
+  readOnly?: boolean;
+  multiline?: boolean;
+  placeholder?: string;
+  required?: boolean;
+  className?: string;
+}
+
+function CardField({
+  label,
+  value,
+  onCommit,
+  readOnly,
+  multiline,
+  placeholder,
+  required,
+  className = "",
+}: CardFieldProps) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const ref = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (!editing) setDraft(value);
+  }, [value, editing]);
+
+  useEffect(() => {
+    if (editing) {
+      const el = ref.current;
+      if (!el) return;
+      el.focus();
+      const len = el.value.length;
+      if (el instanceof HTMLInputElement) {
+        el.setSelectionRange(len, len);
+      } else {
+        el.selectionStart = el.selectionEnd = len;
+        autoGrow(el);
+      }
+    }
+  }, [editing]);
+
+  const commit = () => {
+    setEditing(false);
+    if (onCommit && draft !== value) onCommit(draft);
+  };
+
+  const cancel = () => {
+    setDraft(value);
+    setEditing(false);
+  };
+
+  const wrapStyle: React.CSSProperties = {
+    whiteSpace: "pre-wrap",
+    wordBreak: "break-word",
+    overflowWrap: "anywhere",
+    textWrap: "pretty" as React.CSSProperties["textWrap"],
+  };
+
+  if (editing) {
+    const base =
+      "cell-input w-full bg-paper-50 px-2 py-1.5 rounded-sm border-0 outline-none ring-2 ring-accent text-ink-900 leading-relaxed";
+    return (
+      <div className="rounded-lg bg-paper-100/70 px-3 py-2">
+        <div className="text-[11px] tracking-wide text-ink-400 mb-0.5">
+          {label}
+        </div>
+        {multiline ? (
+          <textarea
+            ref={ref as React.RefObject<HTMLTextAreaElement>}
+            value={draft}
+            onChange={(e) => {
+              setDraft(e.target.value);
+              autoGrow(e.target);
+            }}
+            onBlur={commit}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                commit();
+              } else if (e.key === "Escape") {
+                e.preventDefault();
+                cancel();
+              }
+            }}
+            rows={2}
+            className={base + " resize-y min-h-[2.6em]"}
+          />
+        ) : (
+          <input
+            ref={ref as React.RefObject<HTMLInputElement>}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                commit();
+              } else if (e.key === "Escape") {
+                e.preventDefault();
+                cancel();
+              }
+            }}
+            className={base}
+          />
+        )}
+      </div>
+    );
+  }
+
+  const empty = !value.trim();
+  return (
+    <div
+      className={
+        "rounded-lg bg-paper-100/70 px-3 py-2 " +
+        (readOnly ? "" : "cursor-text hover:bg-paper-200/70 transition-colors ")
+      }
+      style={wrapStyle}
+      onClick={() => !readOnly && !editing && setEditing(true)}
+      title={!readOnly ? (required && empty ? "必填" : "点击编辑") : undefined}
+    >
+      <div className="text-[11px] tracking-wide text-ink-400 mb-0.5">
+        {label}
+      </div>
+      {readOnly ? (
+        <div className={"text-[14.5px] text-ink-500 tabular-nums " + className} style={wrapStyle}>
+          {value}
+        </div>
+      ) : empty ? (
+        <div className={"text-[14.5px] " + className}>
+          <span className="text-ink-400 italic">{placeholder ?? "点击填写"}</span>
+        </div>
+      ) : (
+        <div className={"text-[14.5px] text-ink-900 " + className} style={wrapStyle}>
+          {value}
+        </div>
+      )}
     </div>
   );
 }
