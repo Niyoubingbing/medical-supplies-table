@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 import ExportTable from "@/components/ExportTable";
+import { drawExport } from "@/lib/drawExport";
 import type { Item } from "@/types/item";
 
 const INNER_W = 1000;
@@ -15,7 +16,6 @@ interface Props {
 export default function ScreenshotModal({ open, items, onClose }: Props) {
   const holderRef = useRef<HTMLDivElement>(null);
   const captureRef = useRef<HTMLDivElement>(null);
-  const shotRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const [saving, setSaving] = useState(false);
 
@@ -42,68 +42,29 @@ export default function ScreenshotModal({ open, items, onClose }: Props) {
   if (!open) return null;
 
   const handleSave = async () => {
-    const target = shotRef.current;
-    if (!target) return;
     setSaving(true);
     try {
+      // 确保中文衬线字体（Noto Serif SC）已加载，canvas 文字才会用衬线体而非回退黑体
       const docFonts = (document as Document & { fonts?: FontFaceSet }).fonts;
       if (docFonts) {
         try {
-          await docFonts.ready;
-        } catch {
-          /* ignore */
-        }
-        // 用实际渲染的文字作为采样，确保中文衬线字体（Noto Serif SC）所需的
-        // 字形切片都被加载，避免 html2canvas 抓图时回退成黑体
-        const sample =
-          shotRef.current?.textContent ||
-          "医用耗材录入表规格请购数量单位备注合计";
-        try {
+          const sample =
+            items
+              .map((i) => `${i.name}${i.spec}${i.remark}`)
+              .join("") || "医用耗材录入表规格请购数量单位备注合计";
           await Promise.all([
             docFonts.load('400 12px "Noto Serif SC"', sample),
-            docFonts.load('500 12px "Noto Serif SC"', sample),
             docFonts.load('600 12px "Noto Serif SC"', sample),
-            docFonts.load('700 24px "Noto Serif SC"', sample),
             docFonts.load('400 12px "Source Serif 4"'),
-            docFonts.load('500 12px "Source Serif 4"'),
             docFonts.load('600 12px "Source Serif 4"'),
-            docFonts.load('700 24px "Source Serif 4"'),
           ]);
           await docFonts.ready;
         } catch {
           /* ignore — 回退到系统衬线字体 */
         }
       }
-      const html2canvas = (await import("html2canvas")).default;
-      const canvas = await html2canvas(target, {
-        backgroundColor: "#FAF8F5",
-        scale: 4,
-        useCORS: true,
-        logging: false,
-        imageTimeout: 15000,
-        removeContainer: true,
-        onclone: (doc: Document) => {
-          // html2canvas 1.4.1 不渲染 td 的 vertical-align:middle（一律按顶对齐画），
-          // 这里在克隆文档里把每个单元格内容包进 flex 容器，强制垂直居中。
-          const cells = doc.querySelectorAll<HTMLElement>("td[data-align], th[data-align]");
-          cells.forEach((el) => {
-            const h = el.offsetHeight;
-            if (!h) return;
-            const align = el.getAttribute("data-align") || "left";
-            const inner = el.innerHTML;
-            el.innerHTML = "";
-            const wrap = doc.createElement("div");
-            wrap.style.cssText =
-              `display:flex;align-items:center;justify-content:${align === "center" ? "center" : "flex-start"};` +
-              `height:${h}px;box-sizing:border-box;padding:8px 10px;width:100%;` +
-              `text-align:${align};white-space:normal;word-break:break-word;`;
-            wrap.innerHTML = inner;
-            el.appendChild(wrap);
-            el.style.padding = "0";
-            el.style.verticalAlign = "middle";
-          });
-        },
-      });
+      // 原生 Canvas 直接画表格：垂直居中由绘制逻辑精确计算，不依赖 html2canvas
+      const canvas = drawExport(items);
       const dataUrl = canvas.toDataURL("image/png");
       const a = document.createElement("a");
       const stamp = new Date()
@@ -192,22 +153,6 @@ export default function ScreenshotModal({ open, items, onClose }: Props) {
             关闭
           </button>
         </div>
-      </div>
-    </div>
-
-    {/* 离屏、原尺寸、无 transform 的表格，专供 html2canvas 截图，避免预览缩放导致字号错乱 */}
-    <div
-      aria-hidden
-      style={{
-        position: "fixed",
-        left: -10000,
-        top: 0,
-        width: INNER_W,
-        pointerEvents: "none",
-      }}
-    >
-      <div ref={shotRef} style={{ width: INNER_W }}>
-        <ExportTable items={items} />
       </div>
     </div>
     </>
