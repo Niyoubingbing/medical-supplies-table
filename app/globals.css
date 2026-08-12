@@ -19,8 +19,11 @@ body {
 }
 
 body {
-  font-family: "Source Serif 4", "Source Serif Pro", Georgia, Cambria,
-    "Times New Roman", serif;
+  /* 中文衬线兜底：Noto Serif SC（思源宋体，Web 字体）优先；
+     iOS 有系统宋体 Songti SC、Windows 有 SimSun，可零网络显示衬线；
+     安卓无系统中文衬线，依赖 Noto Serif SC 加载 */
+  font-family: "Noto Serif SC", "Source Serif 4", "Songti SC", "SimSun",
+    Georgia, serif;
   font-size: 15px;
   line-height: 1.6;
   letter-spacing: 0.005em;
