@@ -53,13 +53,23 @@ export default function ScreenshotModal({ open, items, onClose }: Props) {
         } catch {
           /* ignore */
         }
+        // 用实际渲染的文字作为采样，确保中文衬线字体（Noto Serif SC）所需的
+        // 字形切片都被加载，避免 html2canvas 抓图时回退成黑体
+        const sample =
+          shotRef.current?.textContent ||
+          "医用耗材录入表规格请购数量单位备注合计";
         try {
           await Promise.all([
+            docFonts.load('400 12px "Noto Serif SC"', sample),
+            docFonts.load('500 12px "Noto Serif SC"', sample),
+            docFonts.load('600 12px "Noto Serif SC"', sample),
+            docFonts.load('700 24px "Noto Serif SC"', sample),
             docFonts.load('400 12px "Source Serif 4"'),
             docFonts.load('500 12px "Source Serif 4"'),
             docFonts.load('600 12px "Source Serif 4"'),
             docFonts.load('700 24px "Source Serif 4"'),
           ]);
+          await docFonts.ready;
         } catch {
           /* ignore — 回退到系统衬线字体 */
         }

@@ -3,7 +3,9 @@
 import type { Item } from "@/types/item";
 import { FIXED_QTY, FIXED_UNIT } from "@/types/item";
 
-const SERIF = '"Source Serif 4", "Songti SC", "SimSun", "Noto Serif SC", serif';
+// 关键：Noto Serif SC（思源宋体）是带中文字形的衬线 Web 字体，必须放到最前，
+// 否则中文在 html2canvas 里会回退失败变成黑体。Source Serif 4 仅含拉丁字形。
+const SERIF = '"Noto Serif SC", "Source Serif 4", "Songti SC", "SimSun", serif';
 const C = {
   paper: "#FAF8F5",
   headBg: "#F1E9DD",
