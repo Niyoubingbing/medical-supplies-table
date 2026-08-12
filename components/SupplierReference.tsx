@@ -36,8 +36,19 @@ function Chevron({ open }: { open: boolean }) {
   );
 }
 
-export default function SupplierReference() {
-  const [open, setOpen] = useState(false);
+export default function SupplierReference({
+  open: controlledOpen,
+  onOpenChange,
+}: {
+  open?: boolean;
+  onOpenChange?: (v: boolean) => void;
+}) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = (v: boolean) => {
+    if (onOpenChange) onOpenChange(v);
+    else setInternalOpen(v);
+  };
   // 默认全部展开，内容立即可见；仍可逐家公司折叠
   const [expanded, setExpanded] = useState<Set<string>>(
     () => new Set(SUPPLIERS.map((s) => s.name))
@@ -55,7 +66,7 @@ export default function SupplierReference() {
     <>
       {/* 总体悬浮按钮：控制目录显隐 */}
       <button
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen(!open)}
         aria-label={open ? "收起供应商目录" : "展开供应商目录"}
         className="fixed z-40 bottom-5 right-5 sm:bottom-7 sm:right-7 flex items-center gap-2 rounded-full bg-accent text-paper-50 pl-4 pr-5 py-3.5 shadow-card hover:bg-accent-hover active:scale-95 transition-all"
       >
@@ -75,9 +86,9 @@ export default function SupplierReference() {
         <span className="text-sm font-medium">供货目录</span>
       </button>
 
-      {/* 可折叠面板 */}
+      {/* 可折叠面板（层级高于添加/截图的弹窗，便于在录入时参考） */}
       <div
-        className={`fixed z-40 inset-x-0 bottom-0 sm:inset-x-auto sm:bottom-24 sm:right-7 sm:w-[380px] sm:max-w-[calc(100vw-2rem)] transition-all duration-300 ${
+        className={`fixed z-[60] inset-x-0 bottom-0 sm:inset-x-auto sm:bottom-24 sm:right-7 sm:w-[380px] sm:max-w-[calc(100vw-2rem)] transition-all duration-300 ${
           open
             ? "translate-y-0 opacity-100"
             : "translate-y-full sm:translate-y-0 sm:opacity-0 sm:pointer-events-none"
@@ -96,7 +107,7 @@ export default function SupplierReference() {
             </div>
             <button
               onClick={() => setOpen(false)}
-              aria-label="关闭"
+              aria-label="关闭供应商目录"
               className="shrink-0 ml-3 w-8 h-8 -mr-1 grid place-items-center rounded-full text-ink-400 hover:text-ink-800 hover:bg-paper-200 transition-colors"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">

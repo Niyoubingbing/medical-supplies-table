@@ -16,6 +16,7 @@ export default function Page() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Item | null>(null);
   const [shotOpen, setShotOpen] = useState(false);
+  const [refOpen, setRefOpen] = useState(false);
 
   // Hydrate from localStorage on mount
   useEffect(() => {
@@ -188,6 +189,7 @@ export default function Page() {
           }
           setEditing(null);
         }}
+        onOpenSupplier={() => setRefOpen(true)}
       />
 
       <ScreenshotModal
@@ -196,7 +198,7 @@ export default function Page() {
         onClose={() => setShotOpen(false)}
       />
 
-      <SupplierReference />
+      <SupplierReference open={refOpen} onOpenChange={setRefOpen} />
     </main>
   );
 }

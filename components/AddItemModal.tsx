@@ -10,6 +10,7 @@ interface Props {
   nextNo: number;
   onClose: () => void;
   onSave: (data: Omit<Item, "id" | "no" | "qty" | "unit"> & { no: number }) => void;
+  onOpenSupplier?: () => void;
 }
 
 export default function AddItemModal({
@@ -18,6 +19,7 @@ export default function AddItemModal({
   nextNo,
   onClose,
   onSave,
+  onOpenSupplier,
 }: Props) {
   const [spd, setSpd] = useState("");
   const [name, setName] = useState("");
@@ -80,6 +82,30 @@ export default function AddItemModal({
         <p className="text-sm text-ink-500 mt-1 mb-5">
           请购数与单位已固定为「{FIXED_QTY} {FIXED_UNIT}」，无需填写；品名/规格也可留空。
         </p>
+
+        {onOpenSupplier && (
+          <button
+            type="button"
+            onClick={onOpenSupplier}
+            className="mb-4 inline-flex items-center gap-1.5 rounded-md border border-line bg-paper-50 px-3 py-1.5 text-sm text-ink-700 hover:bg-paper-200 transition-colors"
+          >
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-accent"
+            >
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+            打开供货目录参考
+          </button>
+        )}
 
         <div className="space-y-3">
           <Field label="SPD">
