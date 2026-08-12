@@ -62,6 +62,7 @@ export default function ExportTable({ items }: Props) {
             {COLS.map((c) => (
               <th
                 key={c.key}
+                data-align={c.align}
                 style={{
                   border: `1px solid ${C.line}`,
                   background: C.headBg,
@@ -83,6 +84,7 @@ export default function ExportTable({ items }: Props) {
             <tr>
               <td
                 colSpan={COLS.length}
+                data-align="center"
                 style={{
                   border: `1px solid ${C.line}`,
                   padding: "16px 10px",
@@ -100,13 +102,13 @@ export default function ExportTable({ items }: Props) {
                 key={it.id}
                 style={{ background: idx % 2 === 1 ? C.alt : C.paper }}
               >
-                <td style={cellStyle("left")}>{it.spd || "—"}</td>
-                <td style={cellStyle("center")}>{it.no}</td>
-                <td style={cellStyle("left", true)}>{it.name || "未填写"}</td>
-                <td style={cellStyle("left")}>{it.spec || "未填写"}</td>
-                <td style={cellStyle("center")}>{FIXED_QTY}</td>
-                <td style={cellStyle("center")}>{FIXED_UNIT}</td>
-                <td style={cellStyle("left")}>{it.remark || "—"}</td>
+              <td data-align="left" style={cellStyle("left")}>{it.spd || "—"}</td>
+              <td data-align="center" style={cellStyle("center")}>{it.no}</td>
+              <td data-align="left" style={cellStyle("left", true)}>{it.name || "未填写"}</td>
+              <td data-align="left" style={cellStyle("left")}>{it.spec || "未填写"}</td>
+              <td data-align="center" style={cellStyle("center")}>{FIXED_QTY}</td>
+              <td data-align="center" style={cellStyle("center")}>{FIXED_UNIT}</td>
+              <td data-align="left" style={cellStyle("left")}>{it.remark || "—"}</td>
               </tr>
             ))
           )}

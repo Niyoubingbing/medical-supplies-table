@@ -7,7 +7,7 @@ import AddItemModal from "@/components/AddItemModal";
 import ScreenshotModal from "@/components/ScreenshotModal";
 import type { Item } from "@/types/item";
 import { FIXED_QTY, FIXED_UNIT } from "@/types/item";
-import { loadItems, saveItems, nextNo, loadDraft, saveDraft, clearDraft, hasDraft } from "@/lib/storage";
+import { loadItems, saveItems, nextNo } from "@/lib/storage";
 
 export default function Page() {
   const [items, setItems] = useState<Item[]>([]);
@@ -15,19 +15,10 @@ export default function Page() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Item | null>(null);
   const [shotOpen, setShotOpen] = useState(false);
-  const [draftAvailable, setDraftAvailable] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
 
-  // Hydrate from localStorage on mount; 主数据为空时自动恢复暂存草稿
+  // Hydrate from localStorage on mount
   useEffect(() => {
-    const items = loadItems();
-    let init = items;
-    if (init.length === 0 && hasDraft()) {
-      const d = loadDraft();
-      if (d.length) init = d;
-    }
-    setItems(init);
-    setDraftAvailable(hasDraft());
+    setItems(loadItems());
     setHydrated(true);
   }, []);
 
@@ -75,38 +66,7 @@ export default function Page() {
       )
     ) {
       setItems([]);
-      clearDraft();
-      setDraftAvailable(false);
     }
-  };
-
-  const showToast = (msg: string) => {
-    setToast(msg);
-    window.setTimeout(() => setToast(null), 2000);
-  };
-
-  // 暂存：把当前条目（允许缺失/不完整）存为草稿快照
-  const handleStash = () => {
-    saveDraft(items);
-    setDraftAvailable(true);
-    showToast(`已暂存 ${items.length} 条草稿`);
-  };
-
-  // 载入暂存：恢复到上次暂存的快照
-  const handleLoadDraft = () => {
-    const d = loadDraft();
-    if (!d.length) {
-      showToast("没有可载入的暂存");
-      return;
-    }
-    if (
-      items.length > 0 &&
-      !confirm(`载入暂存会覆盖当前 ${items.length} 条记录，确定继续？`)
-    ) {
-      return;
-    }
-    setItems(d);
-    showToast(`已载入 ${d.length} 条暂存`);
   };
 
   const computedNextNo = useMemo(() => nextNo(items), [items]);
@@ -172,20 +132,6 @@ export default function Page() {
             </svg>
             导出截图
           </button>
-          <button
-            onClick={handleStash}
-            className="rounded-lg px-4 py-3 text-sm text-ink-700 border border-line hover:bg-paper-200 transition-colors w-full sm:w-auto"
-          >
-            暂存
-          </button>
-          {draftAvailable && (
-            <button
-              onClick={handleLoadDraft}
-              className="rounded-lg px-4 py-3 text-sm text-accent border border-accent/40 hover:bg-accent-soft/30 transition-colors w-full sm:w-auto"
-            >
-              载入暂存
-            </button>
-          )}
           {items.length > 0 && (
             <button
               onClick={handleClear}
@@ -248,12 +194,6 @@ export default function Page() {
         items={items}
         onClose={() => setShotOpen(false)}
       />
-
-      {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-ink-800 text-paper-50 text-sm px-4 py-2 rounded-lg shadow-card">
-          {toast}
-        </div>
-      )}
     </main>
   );
 }

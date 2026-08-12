@@ -23,7 +23,6 @@ export default function AddItemModal({
   const [name, setName] = useState("");
   const [spec, setSpec] = useState("");
   const [remark, setRemark] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const nameRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -32,7 +31,6 @@ export default function AddItemModal({
       setName(initial?.name ?? "");
       setSpec(initial?.spec ?? "");
       setRemark(initial?.remark ?? "");
-      setError(null);
       // Focus name field on open
       setTimeout(() => nameRef.current?.focus(), 30);
     }
@@ -51,14 +49,6 @@ export default function AddItemModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) {
-      setError("品名不能为空");
-      return;
-    }
-    if (!spec.trim()) {
-      setError("规格不能为空");
-      return;
-    }
     onSave({
       spd: spd.trim(),
       no: initial?.no ?? nextNo,
@@ -88,7 +78,7 @@ export default function AddItemModal({
           {initial?.id ? "编辑条目" : "添加条目"}
         </h2>
         <p className="text-sm text-ink-500 mt-1 mb-5">
-          请购数与单位已固定为「{FIXED_QTY} {FIXED_UNIT}」，无需填写。
+          请购数与单位已固定为「{FIXED_QTY} {FIXED_UNIT}」，无需填写；品名/规格也可留空。
         </p>
 
         <div className="space-y-3">
@@ -100,21 +90,21 @@ export default function AddItemModal({
               className="cell-input w-full rounded-md border border-line bg-paper-50 px-3 py-2 text-ink-800"
             />
           </Field>
-          <Field label="品名" required>
+          <Field label="品名">
             <input
               ref={nameRef}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="如 冠龙PVP器械"
+              placeholder="如 冠龙PVP器械（可留空）"
               className="cell-input w-full rounded-md border border-line bg-paper-50 px-3 py-2 text-ink-800"
             />
           </Field>
-          <Field label="规格" required>
+          <Field label="规格">
             <textarea
               value={spec}
               onChange={(e) => setSpec(e.target.value)}
               rows={2}
-              placeholder="如 经皮L3、L4、L5椎体成形术"
+              placeholder="如 经皮L3、L4、L5椎体成形术（可留空）"
               className="cell-input w-full rounded-md border border-line bg-paper-50 px-3 py-2 text-ink-800 resize-y"
             />
           </Field>
@@ -144,10 +134,6 @@ export default function AddItemModal({
             />
           </Field>
         </div>
-
-        {error && (
-          <p className="mt-3 text-sm text-accent">{error}</p>
-        )}
 
         <div className="mt-6 flex items-center justify-end gap-2">
           <button

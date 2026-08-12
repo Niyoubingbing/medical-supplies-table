@@ -82,6 +82,27 @@ export default function ScreenshotModal({ open, items, onClose }: Props) {
         logging: false,
         imageTimeout: 15000,
         removeContainer: true,
+        onclone: (doc: Document) => {
+          // html2canvas 1.4.1 不渲染 td 的 vertical-align:middle（一律按顶对齐画），
+          // 这里在克隆文档里把每个单元格内容包进 flex 容器，强制垂直居中。
+          const cells = doc.querySelectorAll<HTMLElement>("td[data-align], th[data-align]");
+          cells.forEach((el) => {
+            const h = el.offsetHeight;
+            if (!h) return;
+            const align = el.getAttribute("data-align") || "left";
+            const inner = el.innerHTML;
+            el.innerHTML = "";
+            const wrap = doc.createElement("div");
+            wrap.style.cssText =
+              `display:flex;align-items:center;justify-content:${align === "center" ? "center" : "flex-start"};` +
+              `height:${h}px;box-sizing:border-box;padding:8px 10px;width:100%;` +
+              `text-align:${align};white-space:normal;word-break:break-word;`;
+            wrap.innerHTML = inner;
+            el.appendChild(wrap);
+            el.style.padding = "0";
+            el.style.verticalAlign = "middle";
+          });
+        },
       });
       const dataUrl = canvas.toDataURL("image/png");
       const a = document.createElement("a");
