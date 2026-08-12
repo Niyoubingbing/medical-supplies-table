@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import TableEditor from "@/components/TableEditor";
 import AddItemModal from "@/components/AddItemModal";
+import SupplierReference from "@/components/SupplierReference";
 import ScreenshotModal from "@/components/ScreenshotModal";
 import type { Item } from "@/types/item";
 import { FIXED_QTY, FIXED_UNIT } from "@/types/item";
@@ -194,6 +195,8 @@ export default function Page() {
         items={items}
         onClose={() => setShotOpen(false)}
       />
+
+      <SupplierReference />
     </main>
   );
 }
