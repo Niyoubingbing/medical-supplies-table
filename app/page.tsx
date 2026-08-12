@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import TableEditor from "@/components/TableEditor";
 import AddItemModal from "@/components/AddItemModal";
-import ExportButton from "@/components/ExportButton";
+import ScreenshotModal from "@/components/ScreenshotModal";
 import type { Item } from "@/types/item";
 import { FIXED_QTY, FIXED_UNIT } from "@/types/item";
 import { loadItems, saveItems, nextNo } from "@/lib/storage";
@@ -14,7 +14,7 @@ export default function Page() {
   const [hydrated, setHydrated] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Item | null>(null);
-  const tableWrapRef = useRef<HTMLDivElement>(null);
+  const [shotOpen, setShotOpen] = useState(false);
 
   // Hydrate from localStorage on mount
   useEffect(() => {
@@ -71,6 +71,9 @@ export default function Page() {
 
   const computedNextNo = useMemo(() => nextNo(items), [items]);
 
+  const bigBtn =
+    "inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 text-base font-medium transition-colors shadow-soft w-full sm:w-auto";
+
   return (
     <main className="relative min-h-screen px-4 sm:px-8 py-8 sm:py-12 max-w-[1280px] mx-auto">
       {/* Header */}
@@ -85,13 +88,13 @@ export default function Page() {
           医用耗材录入表
         </h1>
         <p className="text-ink-600 mt-2 max-w-2xl">
-          数据保存在本机浏览器，刷新不丢失。点击表格单元格即可就地编辑；
-          点击「导出截图」可一键下载为 PNG 图片。
+          数据保存在本机浏览器，刷新不丢失。点击表格单元格即可就地编辑，或点每行的「编辑」
+          按钮修改；点「导出截图」可预览并保存为高清 PNG 图片。
         </p>
       </header>
 
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
         <div className="text-sm text-ink-600">
           <span className="text-ink-500">共 </span>
           <span className="font-semibold text-ink-900 tabular-nums">
@@ -104,25 +107,35 @@ export default function Page() {
             </span>
           )}
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
           <button
             onClick={() => {
               setEditing(null);
               setModalOpen(true);
             }}
-            className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-paper-50 bg-accent hover:bg-accent-hover transition-colors shadow-soft"
+            className={bigBtn + " text-paper-50 bg-accent hover:bg-accent-hover"}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="5" x2="12" y2="19" />
               <line x1="5" y1="12" x2="19" y2="12" />
             </svg>
             添加条目
           </button>
-          <ExportButton targetRef={tableWrapRef} />
+          <button
+            onClick={() => setShotOpen(true)}
+            className={bigBtn + " text-paper-50 bg-ink-800 hover:bg-ink-700"}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            导出截图
+          </button>
           {items.length > 0 && (
             <button
               onClick={handleClear}
-              className="rounded-md px-3 py-2 text-sm text-ink-600 hover:text-accent hover:bg-paper-200 transition-colors"
+              className="rounded-lg px-4 py-3 text-sm text-ink-600 hover:text-accent hover:bg-paper-200 transition-colors w-full sm:w-auto"
             >
               清空全部
             </button>
@@ -130,12 +143,16 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Table region (the part to be captured) */}
-      <div ref={tableWrapRef} className="bg-paper-100 p-2 sm:p-3 rounded-2xl">
+      {/* Table region (edit view) */}
+      <div className="bg-paper-100 p-2 sm:p-3 rounded-2xl">
         <TableEditor
           items={items}
           onChange={handleChange}
           onRemove={handleRemove}
+          onEdit={(it) => {
+            setEditing(it);
+            setModalOpen(true);
+          }}
         />
       </div>
 
@@ -170,6 +187,12 @@ export default function Page() {
           }
           setEditing(null);
         }}
+      />
+
+      <ScreenshotModal
+        open={shotOpen}
+        items={items}
+        onClose={() => setShotOpen(false)}
       />
     </main>
   );

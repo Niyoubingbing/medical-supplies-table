@@ -8,9 +8,15 @@ interface Props {
   items: Item[];
   onChange: (id: string, patch: Partial<Item>) => void;
   onRemove: (id: string) => void;
+  onEdit: (item: Item) => void;
 }
 
-export default function TableEditor({ items, onChange, onRemove }: Props) {
+export default function TableEditor({
+  items,
+  onChange,
+  onRemove,
+  onEdit,
+}: Props) {
   if (items.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-line bg-paper-50 py-16 text-center">
@@ -25,18 +31,18 @@ export default function TableEditor({ items, onChange, onRemove }: Props) {
   return (
     <div className="overflow-x-auto rounded-xl border border-line bg-paper-50 shadow-card">
       <table
-        className="w-full border-collapse text-[12.5px] sm:text-[14.5px]"
+        className="w-full border-collapse text-[14.5px]"
         style={{ tableLayout: "fixed" }}
       >
         <colgroup>
           <col style={{ width: "9%" }} />   {/* SPD */}
           <col style={{ width: "5%" }} />    {/* 序号 */}
-          <col style={{ width: "16%" }} />   {/* 品名 */}
-          <col style={{ width: "30%" }} />   {/* 规格 */}
+          <col style={{ width: "15%" }} />   {/* 品名 */}
+          <col style={{ width: "29%" }} />   {/* 规格 */}
           <col style={{ width: "7%" }} />    {/* 请购数 */}
           <col style={{ width: "5%" }} />    {/* 单位 */}
-          <col style={{ width: "23%" }} />   {/* 备注 */}
-          <col style={{ width: "5%" }} />    {/* × */}
+          <col style={{ width: "22%" }} />   {/* 备注 */}
+          <col style={{ width: "8%" }} />    {/* 操作 */}
         </colgroup>
         <thead>
           <tr className="bg-paper-200/80 text-ink-700 sticky top-0 z-10">
@@ -47,7 +53,7 @@ export default function TableEditor({ items, onChange, onRemove }: Props) {
             <Th className="!text-center">请购数</Th>
             <Th className="!text-center">单位</Th>
             <Th>备注</Th>
-            <Th className="!text-center">×</Th>
+            <Th className="!text-center">操作</Th>
           </tr>
         </thead>
         <tbody>
@@ -100,22 +106,31 @@ export default function TableEditor({ items, onChange, onRemove }: Props) {
                 multiline
                 placeholder="—"
               />
-              <td className="px-1 py-2 text-center align-top">
-                <button
-                  onClick={() => {
-                    if (confirm(`确定删除「${it.name || "此条目"}」？`)) {
-                      onRemove(it.id);
-                    }
-                  }}
-                  className="text-ink-400 hover:text-accent transition-colors leading-none p-1 inline-flex"
-                  title="删除该条"
-                  aria-label="删除"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="3 6 5 6 21 6" />
-                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                  </svg>
-                </button>
+              <td className="px-1 py-2 align-top">
+                <div className="flex flex-col gap-1.5">
+                  <button
+                    onClick={() => onEdit(it)}
+                    className="w-full rounded-md px-2 py-2 text-xs sm:text-sm font-medium text-accent border border-accent/40 bg-accent-soft/30 hover:bg-accent-soft/60 transition-colors"
+                  >
+                    编辑
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (confirm(`确定删除「${it.name || "此条目"}」？`)) {
+                        onRemove(it.id);
+                      }
+                    }}
+                    className="w-full rounded-md px-2 py-2 text-xs sm:text-sm text-ink-500 hover:text-accent hover:bg-paper-200 transition-colors inline-flex items-center justify-center gap-1"
+                    title="删除该条"
+                    aria-label="删除"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
+                    删除
+                  </button>
+                </div>
               </td>
             </tr>
           ))}
@@ -135,7 +150,7 @@ function Th({
   return (
     <th
       className={
-        "px-2 py-2 sm:px-3 sm:py-2.5 text-left font-semibold tracking-wide text-[11.5px] sm:text-[13px] " +
+        "px-2 py-3 sm:px-3 sm:py-2.5 text-left font-semibold tracking-wide text-[12px] sm:text-[13px] " +
         className
       }
       style={{ letterSpacing: "0.04em" }}
@@ -206,12 +221,7 @@ function Cell({
 
   if (readOnly) {
     return (
-      <td
-        className={
-          "px-2 py-2 sm:px-3 sm:py-2.5 align-top " + className
-        }
-        style={wrapStyle}
-      >
+      <td className={"px-2 py-3 sm:px-3 sm:py-2.5 align-top " + className} style={wrapStyle}>
         {value}
       </td>
     );
@@ -221,7 +231,7 @@ function Cell({
     const base =
       "w-full bg-paper-50 px-2 py-1.5 rounded-sm border-0 outline-none ring-2 ring-accent text-ink-900 leading-relaxed";
     return (
-      <td className="px-1 py-1 align-top">
+      <td className="px-1 py-1.5 align-top">
         {multiline ? (
           <textarea
             ref={ref as React.RefObject<HTMLTextAreaElement>}
@@ -268,9 +278,7 @@ function Cell({
   const empty = !value.trim();
   return (
     <td
-      className={
-        "px-2 py-2 sm:px-3 sm:py-2.5 align-top cursor-text " + className
-      }
+      className={"px-2 py-3 sm:px-3 sm:py-2.5 align-top cursor-text " + className}
       style={wrapStyle}
       onClick={() => setEditing(true)}
       title={required && empty ? "必填" : "点击编辑"}
