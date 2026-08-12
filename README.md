@@ -40,7 +40,23 @@ npm run dev
 
 ## 部署
 
-任意支持 Next.js 的平台（推荐 Vercel）：
+### Vercel（推荐，已接好 GitHub → Vercel 自动部署）
+
+项目已关联 GitHub 仓库 `Niyoubingbing/medical-supplies-table`，并接入 Vercel。
+
+- 推送到 `main` 分支即自动触发 Vercel 生产构建（`productionBranch: main`）
+- 无需手动上传；改完代码 `git push` 即可上线
+- 线上地址：https://medical-supplies-table.vercel.app
+
+本地仅需：
+
+```bash
+npm run build
+```
+
+### 其他平台
+
+任意支持 Next.js 的平台均可：
 
 ```bash
 npm run build
