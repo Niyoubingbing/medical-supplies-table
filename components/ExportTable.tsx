@@ -8,22 +8,22 @@ const SANS = '"Microsoft YaHei", "黑体", "SimHei", "PingFang SC", "Noto Sans S
 const C = {
   paper: "#FFFFFF",
   headBg: "#F2F3F5",
-  ink: "#1F2937",
-  inkSoft: "#6B7280",
+  ink: "#000000", // 全部文字黑色
+  inkSoft: "#000000",
   line: "#D9DEE5",
   alt: "#F7F8FA",
-  spd: "#1D4ED8", // SPD 列蓝色
+  spd: "#000000",
 };
 
-// 列宽（px），总和 = 944，与容器内容宽度一致（1000 - 左右 padding 28*2）
+// 列宽（px），总和 = 746，与容器内容宽度一致（A4: 794 - 左右 padding 24*2）
 const COLS: { key: string; label: string; w: number; align: "left" | "center" }[] = [
-  { key: "spd", label: "SPD", w: 84, align: "left" },
-  { key: "no", label: "序号", w: 52, align: "center" },
-  { key: "name", label: "品名", w: 296, align: "left" },
-  { key: "spec", label: "规格", w: 230, align: "left" },
-  { key: "qty", label: "请购数", w: 70, align: "center" },
-  { key: "unit", label: "单位", w: 52, align: "center" },
-  { key: "remark", label: "备注", w: 160, align: "left" },
+  { key: "spd", label: "SPD", w: 78, align: "left" },
+  { key: "no", label: "序号", w: 48, align: "center" },
+  { key: "name", label: "品名", w: 232, align: "left" },
+  { key: "spec", label: "规格", w: 150, align: "left" },
+  { key: "qty", label: "请购数", w: 66, align: "center" },
+  { key: "unit", label: "单位", w: 48, align: "center" },
+  { key: "remark", label: "备注", w: 124, align: "left" },
 ];
 
 interface Props {
@@ -35,10 +35,10 @@ export default function ExportTable({ items }: Props) {
   return (
     <div
       style={{
-        width: 1000,
+        width: 794, // A4 宽度（96dpi ≈ 210mm）
         boxSizing: "border-box",
         background: C.paper,
-        padding: 28,
+        padding: 24,
         fontFamily: SANS,
         color: C.ink,
       }}
@@ -70,7 +70,7 @@ export default function ExportTable({ items }: Props) {
                   textAlign: c.align,
                   verticalAlign: "middle",
                   fontWeight: 400,
-                  color: c.key === "spd" ? C.spd : "#000000",
+                  color: "#000000",
                   whiteSpace: "nowrap",
                 }}
               >
@@ -102,7 +102,7 @@ export default function ExportTable({ items }: Props) {
                 key={it.id}
                 style={{ background: idx % 2 === 1 ? C.alt : C.paper }}
               >
-              <td data-align="left" style={cellStyle("left", false, C.spd)}>{it.spd || "—"}</td>
+              <td data-align="left" style={cellStyle("left", false)}>{it.spd || "—"}</td>
               <td data-align="center" style={cellStyle("center")}>{it.no}</td>
               <td data-align="left" style={cellStyle("left", true)}>{it.name || "未填写"}</td>
               <td data-align="left" style={cellStyle("left")}>{it.spec || "未填写"}</td>

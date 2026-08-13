@@ -7,11 +7,11 @@ import type { Item } from "@/types/item";
 const C = {
   paper: "#FFFFFF",
   headBg: "#F2F3F5",
-  ink: "#1F2937",
-  inkSoft: "#6B7280",
+  ink: "#000000", // 全部文字黑色
+  inkSoft: "#000000",
   line: "#D9DEE5",
   alt: "#F7F8FA",
-  spd: "#1D4ED8", // SPD 列蓝色
+  spd: "#000000",
 };
 
 // 黑体（sans-serif）字体栈：优先系统黑体，保证导出 PNG 与预览一致。
@@ -19,18 +19,18 @@ const FONT_BASE = '"Microsoft YaHei", "黑体", "SimHei", "PingFang SC", "Noto S
 
 type Col = { key: string; label: string; w: number; align: "left" | "center" };
 const COLS: Col[] = [
-  { key: "spd", label: "SPD", w: 84, align: "left" },
-  { key: "no", label: "序号", w: 52, align: "center" },
-  { key: "name", label: "品名", w: 296, align: "left" },
-  { key: "spec", label: "规格", w: 230, align: "left" },
-  { key: "qty", label: "请购数", w: 70, align: "center" },
-  { key: "unit", label: "单位", w: 52, align: "center" },
-  { key: "remark", label: "备注", w: 160, align: "left" },
+  { key: "spd", label: "SPD", w: 78, align: "left" },
+  { key: "no", label: "序号", w: 48, align: "center" },
+  { key: "name", label: "品名", w: 232, align: "left" },
+  { key: "spec", label: "规格", w: 150, align: "left" },
+  { key: "qty", label: "请购数", w: 66, align: "center" },
+  { key: "unit", label: "单位", w: 48, align: "center" },
+  { key: "remark", label: "备注", w: 124, align: "left" },
 ];
 
-const PAGE_W = 1000;
-const PAD = 28; // 页面外边距（左右）
-const CONTENT_W = PAGE_W - PAD * 2; // 944，与 COLS 宽度合计一致
+const PAGE_W = 794; // A4 宽度（96dpi ≈ 210mm）
+const PAD = 24; // 页面外边距（左右）
+const CONTENT_W = PAGE_W - PAD * 2; // 746，与 COLS 宽度合计一致
 const FONT_SIZE = 14;
 const LINE_H = FONT_SIZE * 1.5; // 21
 const VPAD = 6; // 单元格上下内边距（比之前更小，单元格更紧凑）
@@ -96,7 +96,7 @@ export function drawExport(items: Item[]): HTMLCanvasElement {
   } else {
     for (const it of items) {
       const raw: Cell[] = [
-        { text: it.spd || "—", align: "left", strong: false, w: COLS[0].w, color: C.spd },
+        { text: it.spd || "—", align: "left", strong: false, w: COLS[0].w },
         { text: String(it.no), align: "center", strong: false, w: COLS[1].w },
         { text: it.name || "未填写", align: "left", strong: true, w: COLS[2].w },
         { text: it.spec || "未填写", align: "left", strong: false, w: COLS[3].w },
@@ -212,7 +212,7 @@ export function drawExport(items: Item[]): HTMLCanvasElement {
       align: c.align,
       strong: false,
       w: c.w,
-      color: c.key === "spd" ? C.spd : "#000000",
+      color: "#000000",
     })),
     headerH,
     false
