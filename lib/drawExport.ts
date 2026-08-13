@@ -5,15 +5,17 @@ import type { Item } from "@/types/item";
 // 因此「预览居中、保存不居中」的 html2canvas 渲染偏差被彻底规避。
 
 const C = {
-  paper: "#FAF8F5",
-  headBg: "#F1E9DD",
-  ink: "#2B1810",
-  inkSoft: "#6B5B4F",
-  line: "#E5DDCC",
-  alt: "#FBF9F5",
+  paper: "#FFFFFF",
+  headBg: "#F2F3F5",
+  ink: "#1F2937",
+  inkSoft: "#6B7280",
+  line: "#D9DEE5",
+  alt: "#F7F8FA",
+  spd: "#1D4ED8", // SPD 列蓝色
 };
 
-const FONT_BASE = '"Noto Serif SC", "Source Serif 4", "Songti SC", "SimSun", serif';
+// 黑体（sans-serif）字体栈：优先系统黑体，保证导出 PNG 与预览一致。
+const FONT_BASE = '"Microsoft YaHei", "黑体", "SimHei", "PingFang SC", "Noto Sans SC", sans-serif';
 
 type Col = { key: string; label: string; w: number; align: "left" | "center" };
 const COLS: Col[] = [
@@ -29,13 +31,13 @@ const COLS: Col[] = [
 const PAGE_W = 1000;
 const PAD = 28; // 页面外边距（左右）
 const CONTENT_W = PAGE_W - PAD * 2; // 944，与 COLS 宽度合计一致
-const FONT_SIZE = 12;
-const LINE_H = FONT_SIZE * 1.6; // 19.2
-const VPAD = 8; // 单元格上下内边距
-const HPAD = 10; // 单元格左右内边距
-const MIN_ROW_H = VPAD * 2 + LINE_H; // 35.2
+const FONT_SIZE = 14;
+const LINE_H = FONT_SIZE * 1.5; // 21
+const VPAD = 6; // 单元格上下内边距（比之前更小，单元格更紧凑）
+const HPAD = 8; // 单元格左右内边距
+const MIN_ROW_H = VPAD * 2 + LINE_H; // 33
 
-type Cell = { text: string; align: "left" | "center"; strong: boolean; w: number };
+type Cell = { text: string; align: "left" | "center"; strong: boolean; w: number; color?: string };
 type Row = { cells: Cell[]; h: number; empty?: boolean };
 
 // CJK 友好的换行：按字符折行（中文），拉丁词按空格折行
@@ -94,7 +96,7 @@ export function drawExport(items: Item[]): HTMLCanvasElement {
   } else {
     for (const it of items) {
       const raw: Cell[] = [
-        { text: it.spd || "—", align: "left", strong: false, w: COLS[0].w },
+        { text: it.spd || "—", align: "left", strong: false, w: COLS[0].w, color: C.spd },
         { text: String(it.no), align: "center", strong: false, w: COLS[1].w },
         { text: it.name || "未填写", align: "left", strong: true, w: COLS[2].w },
         { text: it.spec || "未填写", align: "left", strong: false, w: COLS[3].w },
@@ -187,7 +189,7 @@ export function drawExport(items: Item[]): HTMLCanvasElement {
     let x = PAD;
     for (const c of cells) {
       setFont(c.strong ?? strongDefault);
-      ctx.fillStyle = c.strong ? C.ink : C.ink;
+      ctx.fillStyle = c.color ?? C.ink;
       const lines = wrap(ctx, c.text || "—", c.w - HPAD * 2);
       const textH = lines.length * LINE_H;
       const startY = y + (h - textH) / 2;
@@ -210,6 +212,7 @@ export function drawExport(items: Item[]): HTMLCanvasElement {
       align: c.align,
       strong: true,
       w: c.w,
+      color: c.key === "spd" ? C.spd : C.ink,
     })),
     headerH,
     true

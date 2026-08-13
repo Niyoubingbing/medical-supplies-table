@@ -44,7 +44,7 @@ export default function ScreenshotModal({ open, items, onClose }: Props) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // 确保中文衬线字体（Noto Serif SC）已加载，canvas 文字才会用衬线体而非回退黑体
+      // 确保黑体（sans-serif）系统字体已就绪，canvas 文字才会用黑体而非回退衬线
       const docFonts = (document as Document & { fonts?: FontFaceSet }).fonts;
       if (docFonts) {
         try {
@@ -53,14 +53,14 @@ export default function ScreenshotModal({ open, items, onClose }: Props) {
               .map((i) => `${i.name}${i.spec}${i.remark}`)
               .join("") || "医用耗材录入表规格请购数量单位备注合计";
           await Promise.all([
-            docFonts.load('400 12px "Noto Serif SC"', sample),
-            docFonts.load('600 12px "Noto Serif SC"', sample),
-            docFonts.load('400 12px "Source Serif 4"'),
-            docFonts.load('600 12px "Source Serif 4"'),
+            docFonts.load('400 14px "Microsoft YaHei"', sample),
+            docFonts.load('600 14px "Microsoft YaHei"', sample),
+            docFonts.load('400 14px "PingFang SC"', sample),
+            docFonts.load('600 14px "PingFang SC"', sample),
           ]);
           await docFonts.ready;
         } catch {
-          /* ignore — 回退到系统衬线字体 */
+          /* ignore — 回退到系统黑体 */
         }
       }
       // 原生 Canvas 直接画表格：垂直居中由绘制逻辑精确计算，不依赖 html2canvas

@@ -3,16 +3,16 @@
 import type { Item } from "@/types/item";
 import { FIXED_QTY, FIXED_UNIT } from "@/types/item";
 
-// 关键：Noto Serif SC（思源宋体）是带中文字形的衬线 Web 字体，必须放到最前，
-// 否则中文在 html2canvas 里会回退失败变成黑体。Source Serif 4 仅含拉丁字形。
-const SERIF = '"Noto Serif SC", "Source Serif 4", "Songti SC", "SimSun", serif';
+// 黑体（sans-serif）字体栈：优先系统黑体，保证导出 PNG 与预览一致。
+const SANS = '"Microsoft YaHei", "黑体", "SimHei", "PingFang SC", "Noto Sans SC", sans-serif';
 const C = {
-  paper: "#FAF8F5",
-  headBg: "#F1E9DD",
-  ink: "#2B1810",
-  inkSoft: "#6B5B4F",
-  line: "#E5DDCC",
-  alt: "#FBF9F5",
+  paper: "#FFFFFF",
+  headBg: "#F2F3F5",
+  ink: "#1F2937",
+  inkSoft: "#6B7280",
+  line: "#D9DEE5",
+  alt: "#F7F8FA",
+  spd: "#1D4ED8", // SPD 列蓝色
 };
 
 // 列宽（px），总和 = 944，与容器内容宽度一致（1000 - 左右 padding 28*2）
@@ -39,7 +39,7 @@ export default function ExportTable({ items }: Props) {
         boxSizing: "border-box",
         background: C.paper,
         padding: 28,
-        fontFamily: SERIF,
+        fontFamily: SANS,
         color: C.ink,
       }}
     >
@@ -48,8 +48,8 @@ export default function ExportTable({ items }: Props) {
           width: "100%",
           borderCollapse: "collapse",
           tableLayout: "fixed",
-          fontSize: 12,
-          lineHeight: 1.6,
+          fontSize: 14,
+          lineHeight: 1.5,
         }}
       >
         <colgroup>
@@ -66,11 +66,11 @@ export default function ExportTable({ items }: Props) {
                 style={{
                   border: `1px solid ${C.line}`,
                   background: C.headBg,
-                  padding: "8px 10px",
+                  padding: "6px 8px",
                   textAlign: c.align,
                   verticalAlign: "middle",
                   fontWeight: 600,
-                  color: C.ink,
+                  color: c.key === "spd" ? C.spd : C.ink,
                   whiteSpace: "nowrap",
                 }}
               >
@@ -87,7 +87,7 @@ export default function ExportTable({ items }: Props) {
                 data-align="center"
                 style={{
                   border: `1px solid ${C.line}`,
-                  padding: "16px 10px",
+                  padding: "12px 8px",
                   textAlign: "center",
                   verticalAlign: "middle",
                   color: C.inkSoft,
@@ -102,7 +102,7 @@ export default function ExportTable({ items }: Props) {
                 key={it.id}
                 style={{ background: idx % 2 === 1 ? C.alt : C.paper }}
               >
-              <td data-align="left" style={cellStyle("left")}>{it.spd || "—"}</td>
+              <td data-align="left" style={cellStyle("left", false, C.spd)}>{it.spd || "—"}</td>
               <td data-align="center" style={cellStyle("center")}>{it.no}</td>
               <td data-align="left" style={cellStyle("left", true)}>{it.name || "未填写"}</td>
               <td data-align="left" style={cellStyle("left")}>{it.spec || "未填写"}</td>
@@ -120,15 +120,17 @@ export default function ExportTable({ items }: Props) {
 
 function cellStyle(
   align: "left" | "center",
-  strong = false
+  strong = false,
+  color?: string
 ): React.CSSProperties {
   return {
     border: `1px solid ${C.line}`,
-    padding: "8px 10px",
+    padding: "6px 8px",
     textAlign: align,
     verticalAlign: "middle",
     whiteSpace: "normal",
     wordBreak: "break-word",
     fontWeight: strong ? 600 : 400,
+    color: color ?? C.ink,
   };
 }
