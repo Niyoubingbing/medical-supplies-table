@@ -21,11 +21,11 @@ type Col = { key: string; label: string; w: number; align: "left" | "center" };
 const COLS: Col[] = [
   { key: "spd", label: "SPD", w: 84, align: "left" },
   { key: "no", label: "序号", w: 52, align: "center" },
-  { key: "name", label: "品名", w: 160, align: "left" },
-  { key: "spec", label: "规格", w: 300, align: "left" },
+  { key: "name", label: "品名", w: 296, align: "left" },
+  { key: "spec", label: "规格", w: 230, align: "left" },
   { key: "qty", label: "请购数", w: 70, align: "center" },
   { key: "unit", label: "单位", w: 52, align: "center" },
-  { key: "remark", label: "备注", w: 226, align: "left" },
+  { key: "remark", label: "备注", w: 160, align: "left" },
 ];
 
 const PAGE_W = 1000;
@@ -102,7 +102,7 @@ export function drawExport(items: Item[]): HTMLCanvasElement {
         { text: it.spec || "未填写", align: "left", strong: false, w: COLS[3].w },
         { text: String(it.qty), align: "center", strong: false, w: COLS[4].w },
         { text: it.unit, align: "center", strong: false, w: COLS[5].w },
-        { text: it.remark || "—", align: "left", strong: false, w: COLS[6].w },
+        { text: it.remark || "—", align: "left", strong: true, w: COLS[6].w },
       ];
       let maxLines = 1;
       raw.forEach((c) => {
@@ -210,12 +210,12 @@ export function drawExport(items: Item[]): HTMLCanvasElement {
     COLS.map((c) => ({
       text: c.label,
       align: c.align,
-      strong: true,
+      strong: false,
       w: c.w,
-      color: c.key === "spd" ? C.spd : C.ink,
+      color: c.key === "spd" ? C.spd : "#000000",
     })),
     headerH,
-    true
+    false
   );
   y += headerH;
   rows.forEach((r) => {

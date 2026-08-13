@@ -19,11 +19,11 @@ const C = {
 const COLS: { key: string; label: string; w: number; align: "left" | "center" }[] = [
   { key: "spd", label: "SPD", w: 84, align: "left" },
   { key: "no", label: "序号", w: 52, align: "center" },
-  { key: "name", label: "品名", w: 160, align: "left" },
-  { key: "spec", label: "规格", w: 300, align: "left" },
+  { key: "name", label: "品名", w: 296, align: "left" },
+  { key: "spec", label: "规格", w: 230, align: "left" },
   { key: "qty", label: "请购数", w: 70, align: "center" },
   { key: "unit", label: "单位", w: 52, align: "center" },
-  { key: "remark", label: "备注", w: 226, align: "left" },
+  { key: "remark", label: "备注", w: 160, align: "left" },
 ];
 
 interface Props {
@@ -69,8 +69,8 @@ export default function ExportTable({ items }: Props) {
                   padding: "6px 8px",
                   textAlign: c.align,
                   verticalAlign: "middle",
-                  fontWeight: 600,
-                  color: c.key === "spd" ? C.spd : C.ink,
+                  fontWeight: 400,
+                  color: c.key === "spd" ? C.spd : "#000000",
                   whiteSpace: "nowrap",
                 }}
               >
@@ -108,7 +108,7 @@ export default function ExportTable({ items }: Props) {
               <td data-align="left" style={cellStyle("left")}>{it.spec || "未填写"}</td>
               <td data-align="center" style={cellStyle("center")}>{FIXED_QTY}</td>
               <td data-align="center" style={cellStyle("center")}>{FIXED_UNIT}</td>
-              <td data-align="left" style={cellStyle("left")}>{it.remark || "—"}</td>
+              <td data-align="left" style={cellStyle("left", true)}>{it.remark || "—"}</td>
               </tr>
             ))
           )}
