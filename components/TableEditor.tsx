@@ -211,6 +211,7 @@ function CardRow({
           label="品名"
           value={item.name}
           onCommit={(v) => onChange(item.id, { name: v })}
+          multiline
           required
           placeholder="未填写"
           className="font-medium"

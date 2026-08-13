@@ -17,6 +17,7 @@ export default function Page() {
   const [editing, setEditing] = useState<Item | null>(null);
   const [shotOpen, setShotOpen] = useState(false);
   const [refOpen, setRefOpen] = useState(false);
+  const [spdCopied, setSpdCopied] = useState(false);
 
   // Hydrate from localStorage on mount
   useEffect(() => {
@@ -72,6 +73,48 @@ export default function Page() {
   };
 
   const computedNextNo = useMemo(() => nextNo(items), [items]);
+
+  // 复制整列 SPD：格式为「SPD 器械申请」+ 逐行「序号 <SPD>」（序号保留，SPD 留空）
+  const copySpdColumn = useCallback(async () => {
+    if (items.length === 0) return;
+    const text = [
+      "SPD 器械申请",
+      ...items.map((it) => `${it.no} ${it.spd ?? ""}`),
+    ].join("\n");
+
+    let ok = false;
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        ok = true;
+      } else {
+        throw new Error("clipboard-unavailable");
+      }
+    } catch {
+      // 兜底：临时 textarea + execCommand（兼容非 HTTPS / 旧浏览器 / 移动端）
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.top = "-9999px";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        ok = document.execCommand("copy");
+        document.body.removeChild(ta);
+      } catch {
+        ok = false;
+      }
+    }
+
+    if (ok) {
+      setSpdCopied(true);
+      setTimeout(() => setSpdCopied(false), 1600);
+    } else {
+      alert("复制失败，请手动选择文本复制。");
+    }
+  }, [items]);
 
   const bigBtn =
     "inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 text-base font-medium transition-colors shadow-soft w-full sm:w-auto";
@@ -134,6 +177,25 @@ export default function Page() {
             </svg>
             导出截图
           </button>
+          {items.length > 0 && (
+            <button
+              onClick={copySpdColumn}
+              className={
+                "rounded-lg px-4 py-3 text-sm font-medium border transition-colors w-full sm:w-auto " +
+                (spdCopied
+                  ? "text-accent border-accent/50 bg-accent-soft/40"
+                  : "text-ink-700 border-line bg-paper-50 hover:bg-paper-200")
+              }
+            >
+              <span className="inline-flex items-center justify-center gap-1.5">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+                {spdCopied ? `已复制 ${items.length} 条` : "复制 SPD"}
+              </span>
+            </button>
+          )}
           {items.length > 0 && (
             <button
               onClick={handleClear}
