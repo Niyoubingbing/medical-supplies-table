@@ -1,11 +1,13 @@
 // 医用耗材录入表 — 离线 Service Worker
 // 缓存策略：
 //   - 安装时预缓存应用外壳（HTML / 图标 / manifest）
-//   - 页面导航（HTML）：网络优先，失败回退到缓存外壳 → 断网也能打开
+//   - 页面导航（HTML）：缓存优先（本地高优先级），断网即时可用；
+//     命中缓存的同时后台静默更新，联网后自动刷新到最新版本
 //   - 静态资源（/_next/static、/icons 等）：缓存优先，命中即返回，未命中再走网络并写入缓存
 //   - 跨域字体（Google Fonts 中国镜像）缓存优先，首次联网加载后离线也能用衬线字体
+// 更新机制：新版本发布后，新 SW 进入 waiting；收到 SKIP_WAITING 消息即激活并接管页面
 
-const CACHE = "medical-pwa-v2";
+const CACHE = "medical-pwa-v3";
 
 const PRECACHE = [
   "/",
@@ -52,6 +54,29 @@ function cacheFirst(req) {
   });
 }
 
+// 导航请求：本地缓存高优先级（断网即时可用），同时后台更新缓存
+function navigateStaleWhileRevalidate(req) {
+  return caches.match(req).then((cached) => {
+    const network = fetch(req)
+      .then((res) => {
+        if (res && res.status === 200 && res.type === "basic") {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(req, copy));
+        }
+        return res;
+      })
+      .catch(() => cached); // 彻底断网时回退到已缓存外壳
+    // 优先返回本地缓存，保证离线零延迟打开
+    return cached || network;
+  });
+}
+
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
@@ -71,17 +96,9 @@ self.addEventListener("fetch", (event) => {
   // 仅处理同源请求
   if (url.origin !== self.location.origin) return;
 
-  // 页面导航：网络优先，失败回退缓存外壳
+  // 页面导航：本地缓存优先（离线可用），后台静默更新
   if (req.mode === "navigate") {
-    event.respondWith(
-      fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(req, copy));
-          return res;
-        })
-        .catch(() => caches.match(req).then((r) => r || caches.match("/")))
-    );
+    event.respondWith(navigateStaleWhileRevalidate(req));
     return;
   }
 

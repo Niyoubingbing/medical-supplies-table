@@ -39,11 +39,11 @@ export default function TableEditor({
         <colgroup>
           <col style={{ width: "9%" }} />   {/* SPD */}
           <col style={{ width: "5%" }} />    {/* 序号 */}
-          <col style={{ width: "15%" }} />   {/* 品名 */}
-          <col style={{ width: "29%" }} />   {/* 规格 */}
-          <col style={{ width: "7%" }} />    {/* 请购数 */}
-          <col style={{ width: "5%" }} />    {/* 单位 */}
-          <col style={{ width: "22%" }} />   {/* 备注 */}
+          <col style={{ width: "16%" }} />   {/* 品名 */}
+          <col style={{ width: "30%" }} />   {/* 规格 */}
+          <col style={{ width: "5%" }} />    {/* 请购数 */}
+          <col style={{ width: "4%" }} />    {/* 单位 */}
+          <col style={{ width: "23%" }} />   {/* 备注 */}
           <col style={{ width: "8%" }} />    {/* 操作 */}
         </colgroup>
         <thead>
@@ -170,9 +170,9 @@ function CardRow({
   onEdit: (item: Item) => void;
 }) {
   return (
-    <div className="rounded-xl border border-line bg-paper-50 shadow-card p-3.5">
+    <div className="rounded-xl border border-line bg-paper-50 shadow-card p-3">
       {/* Header: 序号 badge + actions */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center justify-center min-w-[1.75rem] h-7 px-2 rounded-full bg-accent text-paper-50 text-sm font-semibold tabular-nums">
             {item.no}
@@ -205,8 +205,8 @@ function CardRow({
         </div>
       </div>
 
-      {/* Fields */}
-      <div className="grid grid-cols-1 gap-2.5">
+      {/* Fields（手机端精简：不展示「请购数 / 单位」，统一为固定 1 套） */}
+      <div className="grid grid-cols-1 gap-2">
         <CardField
           label="品名"
           value={item.name}
@@ -230,14 +230,6 @@ function CardRow({
           required
           placeholder="未填写"
         />
-        <div className="grid grid-cols-2 gap-2.5">
-          <CardField
-            label="请购数"
-            value={String(FIXED_QTY)}
-            readOnly
-          />
-          <CardField label="单位" value={FIXED_UNIT} readOnly />
-        </div>
         <CardField
           label="备注"
           value={item.remark}

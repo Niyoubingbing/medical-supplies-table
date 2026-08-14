@@ -6,9 +6,12 @@ import TableEditor from "@/components/TableEditor";
 import AddItemModal from "@/components/AddItemModal";
 import SupplierReference from "@/components/SupplierReference";
 import ScreenshotModal from "@/components/ScreenshotModal";
+import DataTransfer from "@/components/DataTransfer";
+import ReorderModal from "@/components/ReorderModal";
 import type { Item } from "@/types/item";
 import { FIXED_QTY, FIXED_UNIT } from "@/types/item";
 import { loadItems, saveItems, nextNo } from "@/lib/storage";
+import { APP_VERSION } from "@/lib/version";
 
 export default function Page() {
   const [items, setItems] = useState<Item[]>([]);
@@ -18,6 +21,8 @@ export default function Page() {
   const [shotOpen, setShotOpen] = useState(false);
   const [refOpen, setRefOpen] = useState(false);
   const [spdCopied, setSpdCopied] = useState(false);
+  const [dtOpen, setDtOpen] = useState(false);
+  const [reorderOpen, setReorderOpen] = useState(false);
 
   // Hydrate from localStorage on mount
   useEffect(() => {
@@ -71,6 +76,16 @@ export default function Page() {
       setItems([]);
     }
   };
+
+  // 拖拽排序：按新顺序重排，并重新生成连续序号
+  const handleReorder = useCallback((next: Item[]) => {
+    setItems(next.map((it, i) => ({ ...it, no: i + 1 })));
+  }, []);
+
+  // 粘贴导入：用新数据整体替换（已在组件内强制请购数/单位与重新编号）
+  const handleImport = useCallback((next: Item[]) => {
+    setItems(next);
+  }, []);
 
   const computedNextNo = useMemo(() => nextNo(items), [items]);
 
@@ -204,6 +219,21 @@ export default function Page() {
               清空全部
             </button>
           )}
+          {items.length > 0 && (
+            <button
+              onClick={() => setReorderOpen(true)}
+              className="rounded-lg px-4 py-3 text-sm font-medium text-ink-700 border border-line bg-paper-50 hover:bg-paper-200 transition-colors w-full sm:w-auto"
+            >
+              排序
+            </button>
+          )}
+          <button
+            onClick={() => setDtOpen(true)}
+            className="rounded-lg px-4 py-3 text-sm text-ink-600 hover:text-ink-900 hover:bg-paper-200 transition-colors w-full sm:w-auto"
+            title="复制导出 / 粘贴导入全部数据"
+          >
+            数据导入/导出
+          </button>
         </div>
       </div>
 
@@ -226,7 +256,7 @@ export default function Page() {
           序号自动递增，删除条目后会自动重新编号。SPD 编码可留空。
         </p>
         <p className="text-ink-400">
-          数据仅存储于本机浏览器，不会上传服务器。
+          数据仅存储于本机浏览器 · v{APP_VERSION}
         </p>
       </footer>
 
@@ -261,6 +291,20 @@ export default function Page() {
       />
 
       <SupplierReference open={refOpen} onOpenChange={setRefOpen} />
+
+      <DataTransfer
+        open={dtOpen}
+        items={items}
+        onClose={() => setDtOpen(false)}
+        onImport={handleImport}
+      />
+
+      <ReorderModal
+        open={reorderOpen}
+        items={items}
+        onClose={() => setReorderOpen(false)}
+        onReorder={handleReorder}
+      />
     </main>
   );
 }

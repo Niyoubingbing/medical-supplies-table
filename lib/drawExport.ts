@@ -21,11 +21,11 @@ type Col = { key: string; label: string; w: number; align: "left" | "center" };
 const COLS: Col[] = [
   { key: "spd", label: "SPD", w: 78, align: "left" },
   { key: "no", label: "序号", w: 48, align: "center" },
-  { key: "name", label: "品名", w: 232, align: "left" },
-  { key: "spec", label: "规格", w: 150, align: "left" },
-  { key: "qty", label: "请购数", w: 66, align: "center" },
-  { key: "unit", label: "单位", w: 48, align: "center" },
-  { key: "remark", label: "备注", w: 124, align: "left" },
+  { key: "name", label: "品名", w: 240, align: "left" },
+  { key: "spec", label: "规格", w: 156, align: "left" },
+  { key: "qty", label: "请购数", w: 56, align: "center" },
+  { key: "unit", label: "单位", w: 40, align: "center" },
+  { key: "remark", label: "备注", w: 128, align: "left" },
 ];
 
 const PAGE_W = 794; // A4 宽度（96dpi ≈ 210mm）
