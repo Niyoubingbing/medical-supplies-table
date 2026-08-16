@@ -4,7 +4,12 @@ out
 .DS_Store
 *.log
 .env*.local
-next-env.d.ts
 .vercel
 tsconfig.tsbuildinfo
 dist
+
+# 本地 AI 助手工作日志（过程草稿，不进仓库）
+.workbuddy/
+
+# 手动备份压缩包（版本管理请用 git）
+*.zip

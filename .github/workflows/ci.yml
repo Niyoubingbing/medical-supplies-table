@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # 注意：package-lock.json 恢复并提交后，请改为 `npm ci` 以获得可复现构建。
+      - name: Install dependencies
+        run: npm install --registry=https://registry.npmmirror.com/
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      # lint 暂未启用：项目尚无 ESLint 配置（next lint 首次运行会要求初始化）。
+      # ESLint 配置落地后取消下面注释并删除本说明块。
+      # - name: Lint
+      #   run: npm run lint
+
+      - name: Production build
+        run: npm run build
+
+  # 版本一致性校验：三处版本号必须联动（docs/RELEASE.md §2）。
+  # 启用前提：package.json 与 lib/version.ts、public/sw.js 的联动方案落地。
+  # check-version:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Verify version sync
+  #       run: node scripts/check-version.mjs

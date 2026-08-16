@@ -28,6 +28,10 @@ const config: Config = {
           hover: "#B55636",
           soft: "#F4D7C7",
         },
+        danger: {
+          DEFAULT: "#A63D2E",
+          hover: "#8F3427",
+        },
         line: "#E5DDCC",
       },
       fontFamily: {

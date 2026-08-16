@@ -9,6 +9,57 @@
   --line: #e5ddcc;
 }
 
+/* 底部抽屉 / 弹层入场动画 */
+@keyframes sheet-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.sheet-panel {
+  animation: sheet-up 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* 居中弹层（确认框）入场 */
+@keyframes sheet-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.sheet-pop {
+  animation: sheet-pop 0.18s ease-out;
+}
+
+/* 顶部提示条 */
+@keyframes toast-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.toast-pop {
+  animation: toast-pop 0.2s ease-out;
+}
+
+/* 键盘可达性：统一焦点环 */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 html,
 body {
   background-color: var(--paper);
@@ -82,4 +133,25 @@ input[type="number"] {
   body::before {
     display: none;
   }
+}
+
+/* 行内编辑输入框：与展示文本同尺寸（无背景/无阴影/无内边距），仅光标提示编辑态。
+   注意：不要在这里重置 border——品名/SPD 的「下划线表单线」由展示态与编辑态共用（border-b），
+   保证两种状态几何尺寸完全一致。 */
+.inline-input {
+  outline: none;
+  box-shadow: none !important;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  resize: none;
+  appearance: none;
+  -webkit-appearance: none;
+  caret-color: #c96442;
+}
+.inline-input::placeholder {
+  color: #9c7a66;
+  opacity: 1;
+  font-style: italic;
 }

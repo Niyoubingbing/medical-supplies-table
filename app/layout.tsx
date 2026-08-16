@@ -17,6 +17,7 @@ export const viewport: Viewport = {
   themeColor: "#C96442",
   width: "device-width",
   initialScale: 1,
+  // 防止 iOS 聚焦字号 <16px 的输入框（SPD/规格行内编辑）时自动放大页面导致跳动
   maximumScale: 1,
 };
 

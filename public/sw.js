@@ -5,9 +5,11 @@
 //     命中缓存的同时后台静默更新，联网后自动刷新到最新版本
 //   - 静态资源（/_next/static、/icons 等）：缓存优先，命中即返回，未命中再走网络并写入缓存
 //   - 跨域字体（Google Fonts 中国镜像）缓存优先，首次联网加载后离线也能用衬线字体
-// 更新机制：新版本发布后，新 SW 进入 waiting；收到 SKIP_WAITING 消息即激活并接管页面
+// 更新机制（用户确认式）：
+//   新版本下载安装后进入 waiting（install 里不调用 skipWaiting，旧版继续完整控制、旧缓存不清理）；
+//   用户确认更新后，页面发送 SKIP_WAITING 消息 → 新 SW 激活 → activate 清理旧缓存并 claim → 页面自动刷新加载新版。
 
-const CACHE = "medical-pwa-v3";
+const CACHE = "medical-pwa-v5";
 
 const PRECACHE = [
   "/",
@@ -20,11 +22,9 @@ const PRECACHE = [
 ];
 
 self.addEventListener("install", (event) => {
+  // 预缓存应用外壳；不自动 skipWaiting——等待用户确认后才激活新版
   event.waitUntil(
-    caches
-      .open(CACHE)
-      .then((cache) => cache.addAll(PRECACHE))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE).then((cache) => cache.addAll(PRECACHE))
   );
 });
 

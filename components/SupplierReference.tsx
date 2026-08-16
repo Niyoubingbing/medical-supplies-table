@@ -68,7 +68,7 @@ export default function SupplierReference({
       <button
         onClick={() => setOpen(!open)}
         aria-label={open ? "收起供应商目录" : "展开供应商目录"}
-        className="fixed z-40 bottom-5 right-5 sm:bottom-7 sm:right-7 flex items-center gap-2 rounded-full bg-accent text-paper-50 pl-4 pr-5 py-3.5 shadow-card hover:bg-accent-hover active:scale-95 transition-all"
+        className="fixed z-40 bottom-24 sm:bottom-7 right-4 sm:right-7 flex items-center justify-center gap-2 rounded-full bg-accent text-paper-50 w-14 h-14 sm:w-auto sm:h-auto sm:pl-4 sm:pr-5 sm:py-3.5 shadow-card hover:bg-accent-hover active:scale-95 transition-all"
       >
         <svg
           width="18"
@@ -83,7 +83,7 @@ export default function SupplierReference({
           <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
           <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
         </svg>
-        <span className="text-sm font-medium">供货目录</span>
+        <span className="text-sm font-medium hidden sm:inline">供货目录</span>
       </button>
 
       {/* 可折叠面板（层级高于添加/截图的弹窗，便于在录入时参考） */}
@@ -118,7 +118,7 @@ export default function SupplierReference({
           </div>
 
           {/* 列表 */}
-          <div className="overflow-y-auto px-4 py-3 space-y-2">
+          <div className="overflow-y-auto px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] space-y-2">
             {SUPPLIERS.map((s) => {
               const isOpen = expanded.has(s.name);
               return (

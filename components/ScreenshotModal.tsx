@@ -1,19 +1,21 @@
 "use client";
 
 import { useLayoutEffect, useRef, useState } from "react";
+import Sheet from "@/components/Sheet";
 import ExportTable from "@/components/ExportTable";
 import { drawExport } from "@/lib/drawExport";
 import type { Item } from "@/types/item";
 
-const INNER_W = 1000;
+const INNER_W = 794; // 与导出表格实际宽度一致（A4 794px），预览撑满可用宽度
 
 interface Props {
   open: boolean;
   items: Item[];
+  listName?: string;
   onClose: () => void;
 }
 
-export default function ScreenshotModal({ open, items, onClose }: Props) {
+export default function ScreenshotModal({ open, items, listName, onClose }: Props) {
   const holderRef = useRef<HTMLDivElement>(null);
   const captureRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
@@ -22,15 +24,15 @@ export default function ScreenshotModal({ open, items, onClose }: Props) {
   useLayoutEffect(() => {
     if (!open) return;
     const measure = () => {
-      const avail = holderRef.current?.clientWidth ?? 360;
+      const avail = holderRef.current?.clientWidth ?? 0;
+      if (avail <= 0 || !captureRef.current) return;
       const s = Math.min(1, avail / INNER_W);
       setScale(s);
-      if (captureRef.current && holderRef.current) {
+      if (holderRef.current) {
         holderRef.current.style.height =
           captureRef.current.offsetHeight * s + "px";
       }
     };
-    // 等一帧，确保 ExportTable 已渲染出真实高度
     const id = requestAnimationFrame(measure);
     window.addEventListener("resize", measure);
     return () => {
@@ -38,8 +40,6 @@ export default function ScreenshotModal({ open, items, onClose }: Props) {
       window.removeEventListener("resize", measure);
     };
   }, [open, items]);
-
-  if (!open) return null;
 
   const handleSave = async () => {
     setSaving(true);
@@ -63,7 +63,7 @@ export default function ScreenshotModal({ open, items, onClose }: Props) {
           /* ignore — 回退到系统黑体 */
         }
       }
-      // 原生 Canvas 直接画表格：垂直居中由绘制逻辑精确计算，不依赖 html2canvas
+      // 原生 Canvas 直接画表格：垂直居中由绘制逻辑精确计算
       const canvas = drawExport(items);
       const dataUrl = canvas.toDataURL("image/png");
       const a = document.createElement("a");
@@ -72,8 +72,9 @@ export default function ScreenshotModal({ open, items, onClose }: Props) {
         .replace(/[-:]/g, "")
         .replace(/\..+/, "")
         .replace("T", "-");
+      const safeName = (listName || "清单").replace(/[\\/:*?"<>|]/g, "-");
       a.href = dataUrl;
-      a.download = `医用耗材录入表-${stamp}.png`;
+      a.download = `${safeName}-${stamp}.png`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -86,45 +87,13 @@ export default function ScreenshotModal({ open, items, onClose }: Props) {
   };
 
   return (
-    <>
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center modal-overlay"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div className="relative w-[min(820px,94vw)] max-h-[92vh] flex flex-col rounded-2xl bg-paper-50 shadow-card border border-line/60 overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3 border-b border-line/60">
-          <h2 className="text-base font-semibold text-ink-900">截图预览</h2>
-          <button
-            onClick={onClose}
-            className="text-ink-500 hover:text-ink-900 text-2xl leading-none px-2"
-            aria-label="关闭"
-          >
-            ×
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-auto bg-paper-200/40 px-4 py-4">
-          <div ref={holderRef} style={{ overflow: "hidden", width: "100%" }}>
-            <div
-              style={{
-                transform: `scale(${scale})`,
-                transformOrigin: "top left",
-                width: INNER_W,
-              }}
-            >
-              <div ref={captureRef} style={{ width: INNER_W }}>
-                <ExportTable items={items} />
-              </div>
-            </div>
-          </div>
-          <p className="text-xs text-ink-400 mt-3 text-center">
-            下方为电脑版式预览，保存后为高清原图（约 4000px 宽）
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3 px-5 py-4 border-t border-line/60">
+    <Sheet
+      open={open}
+      onClose={onClose}
+      title="导出截图"
+      width="sm:w-[min(860px,94vw)]"
+      footer={
+        <div className="flex items-center gap-3">
           <button
             onClick={handleSave}
             disabled={saving}
@@ -153,8 +122,27 @@ export default function ScreenshotModal({ open, items, onClose }: Props) {
             关闭
           </button>
         </div>
+      }
+    >
+      {/* 完整预览（手机与桌面均显示，自适应缩放） */}
+      <div className="bg-paper-200/40 rounded-xl px-3 sm:px-4 py-4">
+        <div ref={holderRef} style={{ overflow: "hidden", width: "100%" }}>
+          <div
+            style={{
+              transform: `scale(${scale})`,
+              transformOrigin: "top left",
+              width: INNER_W,
+            }}
+          >
+            <div ref={captureRef} style={{ width: INNER_W }}>
+              <ExportTable items={items} />
+            </div>
+          </div>
+        </div>
+        <p className="text-xs text-ink-400 mt-3 text-center">
+          A4 版式预览 · 保存后为高清原图（约 4000px 宽）
+        </p>
       </div>
-    </div>
-    </>
+    </Sheet>
   );
 }
